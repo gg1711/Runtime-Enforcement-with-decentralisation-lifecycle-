@@ -3,6 +3,8 @@ import os.path
 import ast
 import hashlib
 
+delimiter = '$ $'
+
 class Peers:
     def __init__(self, name):
         self.name = name
@@ -52,24 +54,18 @@ class Document:
         f.close()
 
     def write_file(self, peer, group, action):
-        if self.num_lines() == 1:
-            last_digest = b''
-        else:
-            with open(self.fname, 'r') as reader:
-                line = reader.readlines()
-                last_line = line[-1].split('$ $')
-                last_digest = last_line[-1]
-                last_digest = ast.literal_eval(last_digest)
-                print(line, " ", str(last_digest))
+
+        with open(self.fname, 'r') as reader:
+            line = reader.readlines()
+            last_line = line[-1]
+            last_digest = self.extract_digest(last_line)
+            # print(line, " ", str(last_digest))
 
         with open(self.fname, 'a') as writer:
-            hash = hashlib.sha256()
-            hash.update(last_digest)
-            hash.update(peer.name.encode('utf-8'))
-            hash.update(group.name.encode('utf-8'))
-            digest = rsa.encrypt(hash.digest(), peer.get_private_key())
+            hashed = self.compute_digest(last_digest, peer.name.encode('utf-8'), group.name.encode('utf-8'))
+            digest = rsa.encrypt(hashed.digest(), peer.get_private_key())
             sequence = [str(rsa.encrypt(action.encode(), group.get_public_key())), peer.name, group.name, str(digest)]
-            line = '$ $'.join(sequence)     # '$ $' is used as delimiter because space can't be used as delimiter
+            line = delimiter.join(sequence)     # '$ $' is used as delimiter because space can't be used as delimiter
             writer.write(line + '\n')
 
     def num_lines(self):
@@ -81,7 +77,7 @@ class Document:
         with open(self.fname, 'r') as reader:
             reader.readline()
             for line in reader.readlines():
-                sequence = line.split('$ $')
+                sequence = line.split(delimiter)
                 crypted_text = ast.literal_eval(sequence[0])
                 # print(crypted_text)
                 peer_name = sequence[1]
@@ -91,8 +87,34 @@ class Document:
                 message = rsa.decrypt(crypted_text, Peers(group_name).get_private_key()).decode('utf-8')
                 print(message, ' ', peer_name, ' ', group_name, digest)
 
+    def compute_digest(self, *args):
+        hashed = hashlib.sha256()
+        for arg in args:
+            hashed.update(arg)
+        return hashed
+
+    def extract_digest(self, line):
+        sequences = line.split(delimiter)
+        if len(sequences) == 1:   # if it is first action..only one line about file will be written
+            return b' '
+        last_digest = sequences[-1][:-1]
+        return ast.literal_eval(last_digest)
+
     def verify_digest(self):
-        
+        with open(self.fname, 'r') as reader:
+            lines = reader.readlines()
+            for idx, line in enumerate((lines[1:])):
+                sequence = line.split(delimiter)
+                crypto_digest = sequence[-1][:-1] # last character skipped bcz of '\n' added in line
+                crypto_digest = ast.literal_eval(crypto_digest)
+                peer_name = sequence[1]
+                group_name = sequence[2]
+                hashed_digest = rsa.decrypt(crypto_digest, Peers(peer_name).get_private_key())
+                last_digest = self.extract_digest(lines[idx])  # idx will be one less of that lines bcz started from 1
+                recompute_digest = self.compute_digest(last_digest, peer_name.encode('utf-8'), group_name.encode('utf-8'))
+
+                if hashed_digest != recompute_digest:
+                    print(f'Error Detected in {idx}')
 
 
 if __name__ == '__main__':
@@ -117,7 +139,7 @@ if __name__ == '__main__':
 
     print(artifact.num_lines())
     artifact.read_file()
-
+    artifact.verify_digest()
 
 
 
