@@ -1,6 +1,7 @@
 import rsa
 import os.path
 import ast
+import hashlib
 
 class Peers:
     def __init__(self, name):
@@ -51,34 +52,47 @@ class Document:
         f.close()
 
     def write_file(self, peer, group, action):
+        if self.num_lines() == 1:
+            last_digest = b''
+        else:
+            with open(self.fname, 'r') as reader:
+                line = reader.readlines()
+                last_line = line[-1].split('$ $')
+                last_digest = last_line[-1]
+                last_digest = ast.literal_eval(last_digest)
+                print(line, " ", str(last_digest))
+
         with open(self.fname, 'a') as writer:
-            sequence = [str(rsa.encrypt(action.encode(), group.get_public_key())), peer.name, group.name]
-            # print(rsa.encrypt(action.encode(), group.get_public_key()))
-            # print(ast.literal_eval(t))
-            # # test = sequence[0].decode('cp1252')
-            # print(sequence[0])
-            # print(test)
-            # print(test.encode('cp1252'))
-            line = ' '.join(sequence)
+            hash = hashlib.sha256()
+            hash.update(last_digest)
+            hash.update(peer.name.encode('utf-8'))
+            hash.update(group.name.encode('utf-8'))
+            digest = rsa.encrypt(hash.digest(), peer.get_private_key())
+            sequence = [str(rsa.encrypt(action.encode(), group.get_public_key())), peer.name, group.name, str(digest)]
+            line = '$ $'.join(sequence)     # '$ $' is used as delimiter because space can't be used as delimiter
             writer.write(line + '\n')
 
     def num_lines(self):
-        with open(self.fname,'r') as reader:
-            print(len(reader.readlines()))
+        with open(self.fname, 'r') as reader:
+            return len(reader.readlines())
 
     def read_file(self):
         print('reading file')
         with open(self.fname, 'r') as reader:
             reader.readline()
             for line in reader.readlines():
-                sequence = line.split(' ')
+                sequence = line.split('$ $')
                 crypted_text = ast.literal_eval(sequence[0])
                 # print(crypted_text)
                 peer_name = sequence[1]
                 group_name = sequence[2]
+                digest = sequence[3]
                 # print(peer_name, group_name)
-                message = rsa.decrypt(crypted_text, Peers(group_name[:-1]).get_private_key()).decode('utf-8')
-                print(message, ' ', peer_name, ' ', group_name)
+                message = rsa.decrypt(crypted_text, Peers(group_name).get_private_key()).decode('utf-8')
+                print(message, ' ', peer_name, ' ', group_name, digest)
+
+    def verify_digest(self):
+        
 
 
 if __name__ == '__main__':
@@ -95,12 +109,13 @@ if __name__ == '__main__':
     fname = input('Enter name of document: ')
     artifact = Document(fname)
     artifact.create_new_file()
+
     artifact.write_file(Peers('gaurav'), group, '17cs02005')
     artifact.write_file(Peers('rahul'), group, '17cs02003')
     artifact.write_file(Peers('rajat'), group, '17cs02007')
     artifact.write_file(Peers('gaurav'), group, '17cs02005')
 
-    artifact.num_lines()
+    print(artifact.num_lines())
     artifact.read_file()
 
 
