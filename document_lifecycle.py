@@ -1,5 +1,5 @@
 import rsa
-import os.path
+import os
 import ast
 import hashlib
 from key_generation_peers import Peers

@@ -1,4 +1,7 @@
 import rsa
+import os
+
+path = os.path.join(os.getcwd(), 'private_public_keys')
 
 
 class Peers:
@@ -12,8 +15,8 @@ class Peers:
         # print(dir(pubkey))
         # print(dir(privkey))
         # print(dir(rsa.PrivateKey))
-        privkey_name = self.name + '_private'
-        pubkey_name = self.name + '_public'
+        privkey_name = os.path.join(path, self.name + '_private')
+        pubkey_name = os.path.join(path, self.name + '_public')
 
         privkey = rsa.PrivateKey.save_pkcs1(privkey)
         pubkey = rsa.PublicKey.save_pkcs1(pubkey)
@@ -33,14 +36,14 @@ class Peers:
 
 
     def get_private_key(self):
-        privkey_name = self.name + '_private'
+        privkey_name = os.path.join(path, self.name + '_private')
         with open(privkey_name, 'r') as reader:
             keydata = reader.read()
         privkey = rsa.PrivateKey.load_pkcs1(keydata)
         return privkey
 
     def get_public_key(self):
-        pubkey_name = self.name + '_public'
+        pubkey_name = os.path.join(path, self.name + '_public')
         with open(pubkey_name, 'r') as reader:
             keydata = reader.read()
         pubkey = rsa.PublicKey.load_pkcs1(keydata)
