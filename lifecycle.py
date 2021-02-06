@@ -2,6 +2,7 @@ import rsa
 import os.path
 import ast
 import hashlib
+import random, string
 
 delimiter = '$ $'
 
@@ -96,7 +97,7 @@ class Document:
     def extract_digest(self, line):
         sequences = line.split(delimiter)
         if len(sequences) == 1:   # if it is first action..only one line about file will be written
-            return b' '
+            return b''
         last_digest = sequences[-1][:-1]
         return ast.literal_eval(last_digest)
 
@@ -107,19 +108,23 @@ class Document:
                 sequence = line.split(delimiter)
                 crypto_digest = sequence[-1][:-1] # last character skipped bcz of '\n' added in line
                 crypto_digest = ast.literal_eval(crypto_digest)
+                # print(crypto_digest)
                 peer_name = sequence[1]
                 group_name = sequence[2]
                 hashed_digest = rsa.decrypt(crypto_digest, Peers(peer_name).get_private_key())
                 last_digest = self.extract_digest(lines[idx])  # idx will be one less of that lines bcz started from 1
-                recompute_digest = self.compute_digest(last_digest, peer_name.encode('utf-8'), group_name.encode('utf-8'))
+                # print(peer_name, group_name, last_digest, hashed_digest)
+                recompute_digest = self.compute_digest(last_digest, peer_name.encode('utf-8'), group_name.encode('utf-8')).digest()
 
                 if hashed_digest != recompute_digest:
                     print(f'Error Detected in {idx}')
+                else:
+                    print(f'line {idx} has no error')
 
 
 if __name__ == '__main__':
     group = Peers('iitbbs')
-    group.add_user()
+    # group.add_user()
 
     if int(input('Want to add user -- Yes(1) / No(0):')):
         name = input('Enter name of peer want to add: ')
@@ -130,12 +135,15 @@ if __name__ == '__main__':
 
     fname = input('Enter name of document: ')
     artifact = Document(fname)
-    artifact.create_new_file()
+    # artifact.create_new_file()
 
-    artifact.write_file(Peers('gaurav'), group, '17cs02005')
-    artifact.write_file(Peers('rahul'), group, '17cs02003')
-    artifact.write_file(Peers('rajat'), group, '17cs02007')
-    artifact.write_file(Peers('gaurav'), group, '17cs02005')
+    # for i in range(1, 50):
+    #     word = ''.join(random.choice(string.ascii_letters) for i in range(10))
+    #     artifact.write_file(Peers('rajat'), group, word)
+    #     artifact.write_file(Peers('gaurav'), group, '17cs02005')
+    #     artifact.write_file(Peers('rahul'), group, '17cs02003')
+    #     artifact.write_file(Peers('rajat'), group, '17cs02007')
+    #     artifact.write_file(Peers('gaurav'), group, '17cs02005')
 
     print(artifact.num_lines())
     artifact.read_file()
