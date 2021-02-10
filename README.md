@@ -15,7 +15,11 @@ Requirements:
 
 To run code:
 
-> python3 main.py
+```bash
+    python3 main.py
+```
+
+![class_description](class_description.png)
  
 **Detailed ReadME will be added soon.**
 
