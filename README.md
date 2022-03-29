@@ -29,8 +29,8 @@ Each user also has its own set of private and public keys which can be used to v
 In this project, I have taken two groups and seven users.
 
 >Groups
-> * Computer Science (Group 1)
-> * Electrical (Group 2)
+> * G1 (Group 1)
+> * G2 (Group 2)
 
 <table>
 <tr>
@@ -38,27 +38,29 @@ In this project, I have taken two groups and seven users.
 <th> Groups Assigned </th>
 </tr>
 <tr>
-<td> Gaurav </td>
+<td> A </td>
+<td> Group 1 </td>
+</tr>
+ <tr>
+<td> B </td>
+<td> Group 1 </td>
+</tr>
+ <tr>
+<td> C </td>
 <td> Group 1 </td>
 </tr>
 <tr>
-<td> Alice </td>
+ <tr>
+<td> D </td>
 <td> Group 2 </td>
-</tr><tr>
-<td> Rahul </td>
-<td> Group 1 </td>
-</tr><tr>
-<td> Bob </td>
-<td> Group 2 </td>
-</tr><tr>
-<td> Rajat </td>
-<td> Group 1 </td>
-</tr><tr>
-<td> Charlie </td>
-<td> Group 2 </td>
-</tr><tr>
-<td> Admin </td>
+</tr>
+ <tr>
+<td> E </td>
 <td> Group 1, Group 2 </td>
+</tr>
+ <tr>
+<td> F </td>
+<td> Group 2 </td>
 </tr>
 </table>
 
