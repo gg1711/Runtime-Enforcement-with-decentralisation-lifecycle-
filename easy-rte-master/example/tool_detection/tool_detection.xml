@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EnforcedFunction Name="tool_detection">
+	<Interface>
+		<Input Name="T1" Type="int16_t" Constant="false" Comment=""></Input>
+		<Input Name="T2" Type="int16_t" Constant="false" Comment=""></Input>
+		<Input Name="T3" Type="int16_t" Constant="false" Comment=""></Input>
+		<Input Name="T4" Type="int16_t" Constant="false" Comment=""></Input>
+		<Input Name="T5" Type="int16_t" Constant="false" Comment=""></Input>
+		<Input Name="T6" Type="int16_t" Constant="false" Comment=""></Input>
+		<Input Name="T7" Type="int16_t" Constant="false" Comment=""></Input>
+		<Output Name="res" Type="int16_t" Constant="false" Comment=""></Output>
+	</Interface>
+	<Policy Name="p1">
+		<InternalVars></InternalVars>
+		<Machine>
+			<PState>s0</PState>
+			<PState>s1</PState>
+			<PTransition>
+				<Source>s0</Source>
+				<Destination>s0</Destination>
+				<Condition>!T2</Condition>
+			</PTransition>
+			<PTransition>
+				<Source>s0</Source>
+				<Destination>s1</Destination>
+				<Condition>T2</Condition>
+			</PTransition>
+			<PTransition>
+				<Source>s1</Source>
+				<Destination>s1</Destination>
+				<Condition>!T3</Condition>
+			</PTransition>
+			<PTransition>
+				<Source>s1</Source>
+				<Destination>violation</Destination>
+				<Condition>( T3 )</Condition>
+				<Recover>
+					<VarName>res</VarName>
+					<Value>1</Value>
+				</Recover>
+			</PTransition>
+		</Machine>
+	</Policy>
+	<Policy Name="p2">
+		<InternalVars>
+			<VarDeclaration Name="v" Type="dtimer_t" Constant="false" Comment=""></VarDeclaration>
+		</InternalVars>
+		<Machine>
+			<PState>s0</PState>
+			<PState>s1</PState>
+			<PTransition>
+				<Source>s0</Source>
+				<Destination>s1</Destination>
+				<Condition>T2</Condition>
+				<Expressions>
+					<VarName>v</VarName>
+					<Value>1</Value>
+				</Expressions>
+			</PTransition>
+			<PTransition>
+				<Source>s0</Source>
+				<Destination>s0</Destination>
+				<Condition>!T2</Condition>
+			</PTransition>
+			<PTransition>
+				<Source>s1</Source>
+				<Destination>s1</Destination>
+				<Condition>( T2 and v &lt; 5 )</Condition>
+			</PTransition>
+			<PTransition>
+				<Source>s1</Source>
+				<Destination>s0</Destination>
+				<Condition>!T2</Condition>
+			</PTransition>
+			<PTransition>
+				<Source>s1</Source>
+				<Destination>violation</Destination>
+				<Condition>( T2 and v &gt;= 5 )</Condition>
+				<Recover>
+					<VarName>res</VarName>
+					<Value>2</Value>
+				</Recover>
+			</PTransition>
+		</Machine>
+	</Policy>
+</EnforcedFunction>

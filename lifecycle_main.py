@@ -18,64 +18,72 @@ def generate_graph(x, y, xlabel, ylabel, title):
     plt.show()
 
 
-def main(cnt):
-    groups = ['G1', 'G2']
+groups = ['G1', 'G2']
 
-    group1 = Peers(groups[0], is_group = True)
-    group2 = Peers(groups[1], is_group = True)
+group1 = Peers(groups[0], is_group = True)
+group2 = Peers(groups[1], is_group = True)
 
-    arg = input('Want to generate new keys for Groups YES/NO: ')
+arg = input('Want to generate new keys for Groups YES/NO: ')
 
-    if arg == 'YES':
-        group1.add_user()
-        group2.add_user()
-    print(f"groups available are:  {group1.name} and {group2.name}")
+if arg == 'YES':
+    group1.add_user()
+    group2.add_user()
+print(f"groups available are:  {group1.name} and {group2.name}")
 
-    users = ['A','B','C', 'D','E','F']
-    user_objects = dict()
+users = ['A','B','C', 'D','E','F']
+user_objects = dict()
 
+for user in users:
+    user_objects[user] = Peers(user)
+
+print("Users available are: ", end="")
+print(users)
+
+user_groups = [[group1], [group1], [group1], [group2], [group1, group2], [group2]]
+arg = input('Want to generate new keys for Users YES/NO: ')
+
+if arg == 'YES':
     for user in users:
-        user_objects[user] = Peers(user)
+        user_objects[user].add_user()
 
-    print("Users available are: ", end="")
-    print(users)
+for user, groups in zip(users, user_groups):
+    for group in groups:
+        user_objects[user].add_group(group.name)
 
-    user_groups = [[group1], [group1], [group1], [group2], [group1, group2], [group2]]
-    arg = input('Want to generate new keys for Users YES/NO: ')
+filename = input('Enter name of document: ')
+doc = Document(filename)
 
-    if arg == 'YES':
-        for user in users:
-            user_objects[user].add_user()
+arg = input('Want to write document YES/NO: ')
 
-    for user, groups in zip(users, user_groups):
-        for group in groups:
-            user_objects[user].add_group(group.name)
+if arg == 'YES':
+    doc.create_new_file()
 
-    filename = input('Enter name of document: ')
-    doc = Document(filename)
+actions = [(user_objects['A'], group1, '17cs02005'),
+        (user_objects['B'], group1, '17cs02003'),
+        (user_objects['D'], group2, get_text(15)),
+        (user_objects['E'], group1, '17cs02007'),
+        (user_objects['F'], group1, get_text(15)),
+        (user_objects['D'], group2, get_text(15)),
+        (user_objects['C'], group1, '17cs02005'),
+        (user_objects['E'], group2, get_text(15)),
+        (user_objects['F'], group2, 'I am admin'),
+]
 
-    arg = input('Want to write document YES/NO: ')
+def writeDoc(idx):
+    action = actions[idx]
+    peer_name = action[0].name
+    group_name = action[1].name
 
-    if arg == 'YES':
-        doc.create_new_file()
+    doc.write_file(action[0], action[1], action[2])
 
-        doc.write_file(user_objects['A'], group1, '17cs02005')
-        doc.write_file(user_objects['B'], group1, '17cs02003')
-        doc.write_file(user_objects['D'], group2, get_text(15))
-        doc.write_file(user_objects['E'], group1, '17cs02007')
-        doc.write_file(user_objects['F'], group1, get_text(15))
-        doc.write_file(user_objects['D'], group2, get_text(15))
-        doc.write_file(user_objects['C'], group1, '17cs02005')
-        doc.write_file(user_objects['E'], group2, get_text(15))
-        doc.write_file(user_objects['F'], group2, 'I am admin')
+    return [peer_name, group_name]
 
-        # doc.write_file(Peers('gaurav'), group2, '17cs02005')
-
+def verify_digest(idx):
     print(doc.num_lines())
-    doc.read_file(user_objects['E'])
-    doc.read_file(user_objects['A'])
     doc.verify_digest()
 
+
+def get_lifecycle(idx):
     actions = doc.get_lifecycle(user_objects['A'], [group1])
     print(f"\nactions performed in {group1.name} group")
     for action in actions:
